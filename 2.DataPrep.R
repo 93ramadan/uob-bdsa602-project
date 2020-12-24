@@ -1,14 +1,37 @@
 #************************************************************#
 #*  Convert "date" to DATE data type
 #************************************************************#
-bahrain$date_asdate = as.Date(bahrain$date, "%m/%d/%Y")
+COVID19$date = as.Date(COVID19$date, "%Y-%m-%d")
 
-bahrain_forward$date_asdate = as.Date(bahrain_forward$date, "%d-%m-%y")
-bahrain_forward$day = seq.int(nrow(bahrain_forward))
+#bahrain_forward$date_asdate = as.Date(bahrain_forward$date, "%d-%m-%y")
+#bahrain_forward$day = seq.int(nrow(bahrain_forward))
 
 #************************************************************#
-#*  Remove days which have no registered total cases
+#*  Grouping the cases based on the countries
 #************************************************************#
-which_casesNotZero = bahrain$total_cases!=0
-#* if a day comes in the middle with total cases as 0, will this cause a error in the analysis since this is time-based analysis?
-bahrain = bahrain[which_casesNotZero,]
+by_country <- COVID19 %>% group_by(country)
+by_country
+by_country %>% summarise( sum(total_cases))
+by_country %>% summarise( length(country))
+COVID19$country[59]
+
+NewCasesPerCountry = NULL
+LRModels = NULL
+counter = 1
+dayCounter = c(1:59)
+
+for (i in 1:50) #50 conuntries
+  {
+    for(j in 1:59) #59 days
+      { 
+      NewCasesPerCountry[j] = COVID19$new_cases[counter]
+      counter=counter+1
+      }
+     LRModels[[i]] = lm(NewCasesPerCountry ~ dayCounter )
+  }
+
+LRModels
+
+
+
+
