@@ -1,4 +1,4 @@
-library(caret) # to create folds
+
 folds = createFolds(y=NewCasesPerCountry,k=10)
 folds[[1]] # just to see the indices of the first fold
 folds[[2]] # just to see the indices of the second fold

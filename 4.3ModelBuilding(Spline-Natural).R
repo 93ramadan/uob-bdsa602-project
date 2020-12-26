@@ -22,6 +22,7 @@ for (i in 1:total.conutries)
   fit = prediction$fit
   se = prediction$se.fit
   CI = cbind(fit-2*se,fit+2*se)
+  Models.Error$SplineNatural[i] = mean((NewCasesPerCountry-fit)^2)
   
   plot(dayCounter,NewCasesPerCountry,xlab="Days",ylab="Number of New Cases",pch=20,col="darkgrey",main=paste("Natural Cubic Spline of" ,country.name))
   lines(dayCounter,fit,lty=1,lwd=2,col="blue") 
