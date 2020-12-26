@@ -2,19 +2,20 @@
 #*  Building Linear Regression Models for each country
 #************************************************************#
 
+Models.LR = NULL
 NewCasesPerCountry = NULL
-LRModels = NULL
-counter = 1
-dayCounter = c(1:59)
+country.name = NULL
+counter=1
 
-for (i in 1:50) #50 conuntries
+for (i in 1:total.conutries) 
 {
-  for(j in 1:59) #59 days
+  country.name = COVID19$country[counter]
+  for(j in 1:study.period) 
   { 
     NewCasesPerCountry[j] = COVID19$new_cases[counter]
     counter=counter+1
   }
-  LRModels[[i]] = lm(NewCasesPerCountry ~ dayCounter )
+  Models.LR[[i]] = lm(NewCasesPerCountry ~ dayCounter )
 }
 
-summary(LRModels[[3]])
+summary(Models.LR[[3]])

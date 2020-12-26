@@ -9,12 +9,21 @@ COVID19$date = as.Date(COVID19$date, "%Y-%m-%d")
 #************************************************************#
 #*  Grouping the cases based on the countries
 #************************************************************#
-# didnt benifit frm it yet
-by_country <- COVID19 %>% group_by(country)
-by_country
-by_country %>% summarise( sum(total_cases))
-by_country %>% summarise( length(country))
 
+NewCasesPerCountry = NULL
+counter = 1
+study.period = 59
+dayCounter = c(1:study.period)
+total.conutries = 50
+
+for (i in 1:total.conutries) 
+{
+  for(j in 1:study.period) 
+  { 
+    NewCasesPerCountry[j] = COVID19$new_cases[counter]
+    counter=counter+1
+  }
+}
 
 
 
