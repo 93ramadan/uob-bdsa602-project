@@ -22,3 +22,6 @@ listOfCountries = unique(COVID19$country)
 
 
 
+
+
+
