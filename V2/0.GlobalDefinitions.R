@@ -62,6 +62,10 @@ get_Data_ByCountryCode = function(selectedDataSource, selectedCountryCode){
   return(countryData)
 }
 
+#************************************************************#
+#*  App UI  Functions
+#************************************************************#
+
 Text_InitialAnalysis = function(countryData, selectedStart, selectedEnd){
   initialAnalysisOutput = ''
   
@@ -126,6 +130,24 @@ Plot_InitialAnalysis = function(countryName, countryData){
   
 }
 
+Text_PlotHeaderWarnings_ByModelingData = function(countryData, interestedY){
+  warningMessage = ''
+  
+  # Prepare Interested Y
+  modelingData = data.frame(cbind("Y" = countryData[,][interestedY]))
+  colnames(modelingData)[1] = 'Y'
+  
+  if (sum(is.na(modelingData$Y)) > 0){
+    warningMessage = paste(warningMessage,'<br/>', 'The data contains NA values which have been set as zero (0).')
+  }
+  
+  if (sum(!is.na(modelingData$Y) & modelingData$Y < 0) > 0){
+    warningMessage = paste(warningMessage,'<br/>', 'The data contains negative values which have been set as zero (0).')
+  }
+  
+  return(warningMessage)
+}
+
 #************************************************************#
 #*  Data Analysis Functions
 #************************************************************#
@@ -152,7 +174,47 @@ get_ModelingData_ByCountryCodeAndDates = function(selectedDataSource, selectedCo
   return(modelingData)
 }
 
-build_LinearRegressionModel = function(modelData, modelFormula){
-  return(glm(formula=modelFormula, data=modelData))
+get_ModelingData_ByCountryData = function(countryData, interestedY){
+  # Get Total Days * Prepare Dates
+  StudyTimeFrame.Start = min(countryData$date_asdate)
+  StudyTimeFrame.End = max(countryData$date_asdate)+1
+  StudyTimeFrame.TotalDays = as.numeric((StudyTimeFrame.End - StudyTimeFrame.Start), units="days")
+  
+  # Generate Day Counter
+  dayCounter = 1 : StudyTimeFrame.TotalDays
+  
+  # Generate Modeling Data 
+  modelingData = data.frame(cbind("X" = dayCounter, "Y" = countryData[1:StudyTimeFrame.TotalDays,][interestedY]))
+  colnames(modelingData)[1] = 'X'
+  colnames(modelingData)[2] = 'Y'
+  
+  # Clean NA
+  #if (sum(is.na(modelingData$Y)) > 0){
+  modelingData$Y[is.na(modelingData$Y)] <- 0
+  #}
+  
+  # Clean Negatives
+    #if (sum(modelingData$Y < 0) > 0){
+    #modelingData[(modelingData$Y < 0), ]$Y = 0
+    #}
+  
+  return(modelingData)
+}
+
+build_LinearRegressionModel = function(modelData){
+  return(glm(formula=(Y ~ X), data=modelData))
+}
+
+build_CubicSplineModel = function(modelData){
+  return(lm(formula=(Y ~ bs(X, df=6)), data=modelData))
+}
+
+build_NaturalSplineModel = function(modelData){
+  return(lm(formula=(Y ~ ns(X, df=4)), data=modelData))
+}
+
+build_SmoothSplineModel = function(modelData){
+  optimalDF = smooth.spline(x=modelData$X, y=modelData$Y, cv=TRUE)
+  return(optimalDF)
 }
 

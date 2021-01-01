@@ -5,7 +5,7 @@
 server = function(input, output, session) {
   
   #************************************************************#
-  #*  Dynamic UI Updates - Sidebar
+  #*  Dynamic UI Updates
   #************************************************************#
   
   #* Data Source Selection
@@ -84,6 +84,9 @@ server = function(input, output, session) {
           (countrySelectedHasChanged() == FALSE & dateRangeHasChanged() == TRUE))
     print("Update initial analysis output plots")
     
+    output$Plot_InitialAnalysisTitle = renderText({
+      "Cases vs. Deaths Overview"
+    })
     countryName = listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName
     Plot_InitialAnalysis(countryName, countryFilteredData())
   })
@@ -101,7 +104,6 @@ server = function(input, output, session) {
   })
   observeEvent(countryFilteredData(), {
     print('country filtered data has been updated')
-    
   })
   observeEvent(input$selectedDates, {
     # To allow data to be filtered
@@ -109,211 +111,118 @@ server = function(input, output, session) {
     countrySelectedHasChanged(FALSE)
   })
   
-  
-  #* Continent Selection
-  #observeEvent(input$selectedContinent, {
-  #  selectedContinent = input$selectedContinent
-  #  
-  #  print(paste('continent changed to = ', selectedContinent))
-  #
-  #  if (!is.null(session$userData$modelingDatesEvent)){
-  #    session$userData$modelingDatesEvent$destroy()
-  #  }
-  #  
-  #  output$dateRangeSelection <- renderUI({ })
-  #  output$Output_Header = renderText({ })
-  #  output$Output_InitialAnalysis = renderText({ })
-  #  output$Plot_InitialAnalysis = renderPlot({ })
-  #  
-  #  if (!is.null(selectedContinent) & selectedContinent != ''){
-  #    listOfCountries = get_ListOfCountries_ByContinent(input$selectedDataSource, selectedContinent)
-  #    listOfCountries = with(listOfCountries, split(CountryCode, CountryName))
-  #    updateSelectInput(session, "selectedCountryCode", choices = listOfCountries, selected = "")
-  #  }
-  #})
-  
-  #updating_type_inprogress <- reactiveVal(1)
-  
-  #* Country Selection
-  #observeEvent(input$selectedCountryCode, {
-  #  selectedCountryCode = input$selectedCountryCode
-  #  updating_type_inprogress(1)
-  #  
-  #  print(paste('country changed to = ', selectedCountryCode))
-  #  
-  #  if (!is.null(session$userData$modelingDatesEvent)){
-  #    session$userData$modelingDatesEvent$destroy()
-  #  }
-  #  removeUI("dateRangeSelection")
-  #  removeUI("modelingDates")
-  #  output$dateRangeSelection <- renderUI({ })
-  #  output$Output_Header = renderText({ })
-  #  output$Output_InitialAnalysis = renderText({ })
-  #  output$Plot_InitialAnalysis = renderPlot({ })
-  # 
-  #  if (!is.null(selectedCountryCode) & selectedCountryCode != ''){
-  #    selectedCountryName = get_CountryName_ByCountryCode(input$selectedDataSource, input$selectedCountryCode)
-  #    
-  #    #* Update Output Header
-  #    output$Output_Header = renderText({
-  #      print("Update country name header")
-  #      selectedCountryName
-  #    })
-  #    
-  #    minDate = min(countryData()$date_asdate)
-  #    maxDate = max(countryData()$date_asdate)
-  #    output$dateRangeSelection <- renderUI({
-  #      dateRangeInput(inputId = "modelingDates", 'Modeling Period', start = minDate, end = maxDate, min = minDate, max = maxDate)
-  #    })
-  #    
-  #    update_InitialAnalysis(output, selectedCountryName, countryData = countryData(), minDate = minDate, maxDate = maxDate)
-  #   
-  #    #* Date Range Selection
-  #    session$userData$modelingDatesEvent = observeEvent(input$modelingDates, {
-  #      modelingDates = input$modelingDates
-  #      print(paste('modeling dates changed to = ', modelingDates[1], "until", modelingDates[2]))
-  #      
-  #      #req(!updating_type_inprogress())
-  #      #* Update Output Initial Analysis
-  #      output$Output_InitialAnalysis = renderText({
-  #        print("From Date - Update initial analysis output")
-  #        if (!is.null(input$selectedCountryCode) & input$selectedCountryCode != '' & !is.null(input$modelingDates)){
-  #          Text_InitialAnalysis(countryData(), input$modelingDates[1], input$modelingDates[2])
-  #        } else {
-  #          "Make some selections please ..."
-  #        }
-  #      })
-#
-  #      #* Plot Initial Analysis
-  #      output$Plot_InitialAnalysis = renderPlot({
-  #        print("Update initial analysis plot")
-  #        if (!is.null(input$selectedCountryCode) & input$selectedCountryCode != '' & !is.null(input$modelingDates)){
-  #          localData = countryData()
-  #          localCountryName = 'countryName()'
-  #          
-  #          # Visualize Total Cases
-  #          InitialPlots.TotalCases = ggplot(localData, aes(x = date_asdate)) + ggtitle(paste('Total cases in', localCountryName)) +
-  #            geom_area(aes(y = total_cases), fill = "blue", alpha = 0.2) +
-  #            geom_line(aes(x = date_asdate, y = total_cases), color = "blue") +
-  #            xlab("Date") +
-  #            ylab("Total Cases")
-  #          
-  #          # Visualize New Cases
-  #          InitialPlots.NewCases = ggplot(localData, aes(x = date_asdate)) + ggtitle(paste('New cases in', localCountryName)) +
-  #            geom_area(aes(y = new_cases), fill = "blue", alpha = 0.2) +
-  #            geom_line(aes(x = date_asdate, y = new_cases), color = "blue") +
-  #            xlab("Date") +
-  #            ylab("New Cases")
-  #          
-  #          # Visualize Total Deaths
-  #          InitialPlots.TotalDeaths = ggplot(localData, aes(x = date_asdate)) + ggtitle(paste('Total deaths in', localCountryName)) +
-  #            geom_area(aes(y = total_deaths), fill = "black", alpha = 0.2) +
-  #            geom_line(aes(x = date_asdate, y = total_deaths), color = "black") +
-  #            xlab("Date") +
-  #            ylab("Total Deaths")
-  #          
-  #          # Visualize New Deaths
-  #          InitialPlots.NewDeaths = ggplot(localData, aes(x = date_asdate)) + ggtitle(paste('New cases in', localCountryName)) +
-  #            geom_area(aes(y = new_deaths), fill = "black", alpha = 0.2) +
-  #            geom_line(aes(x = date_asdate, y = new_deaths), color = "black") +
-  #            xlab("Date") +
-  #            ylab("New Deaths")
-  #          
-  #          # Display Plots
-  #          grid.arrange(InitialPlots.TotalCases, InitialPlots.NewCases,
-  #                       InitialPlots.TotalDeaths, InitialPlots.NewDeaths, nrow=2, ncol=2)
-  #        }
-  #      })
-  #      
-  #      
-  #    }, ignoreInit = TRUE, autoDestroy = TRUE)
-  #    
-  #  }
-  #})
-  
- 
-  
-  #************************************************************#
-  #*  App Variables
-  #************************************************************#
-  
-  #* Full COVID-19 Data for Selected Country
-  #countryData = reactive({
-  #  print("loading country data")
-  #  if (!is.null(input$selectedCountryCode) & input$selectedCountryCode != ''){
-  #    get_Data_ByCountryCode(input$selectedDataSource, input$selectedCountryCode)
-  #  }
-  #})
-  #
-  ##* Model Data for Selected Country
-  #ModelingData = reactive({
-  #  print("or here?")
-  #  if (!is.null(input$selectedCountryCode) & !is.null(input$modelingDates)){
-  #    get_ModelingData_ByCountryCodeAndDates(input$selectedDataSource, input$selectedCountryCode, input$modelingDates[1], input$modelingDates[2], input$selectedVariableY)
-  #  }
-  #})
-  
-  #************************************************************#
-  #*  Output Area
-  #************************************************************#
-
-  
-  
-  
-  
-  #************************************************************#
-  #*  Output Plots
-  #************************************************************#
-  
-}
-
-update_InitialAnalysis = function(output, countryName, countryData, minDate, maxDate){
-  
-  #* Update Output Initial Analysis
-  output$Output_InitialAnalysis = renderText({
-    print("From Country - Update initial analysis output")
-    if (!is.null(countryData) & !is.null(minDate) & !is.null(maxDate)){
-      Text_InitialAnalysis(countryData, minDate, maxDate)
-    } else {
-      "Make some selections please ..."
-    }
+  #* Country Filtered Data Changed
+  countryModelingData = reactive({
+    req(input$selectedVariableY)
+    req(countryFilteredData())
+    print(paste('Updating modeling data'))
+    
+    get_ModelingData_ByCountryData(countryFilteredData(), input$selectedVariableY)
+  })
+  observeEvent(countryModelingData(),{
+    print('country modeling data has been updated')
   })
   
-  #* Plot Initial Analysis
-  output$Plot_InitialAnalysis = renderPlot({
-    print("From Country - Update initial analysis plot")
-      
-    # Visualize Total Cases
-    InitialPlots.TotalCases = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('Total cases in', countryName)) +
-      geom_area(aes(y = total_cases), fill = "blue", alpha = 0.2) +
-      geom_line(aes(x = date_asdate, y = total_cases), color = "blue") +
-      xlab("Date") +
-      ylab("Total Cases")
-      
-    # Visualize New Cases
-    InitialPlots.NewCases = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('New cases in', countryName)) +
-      geom_area(aes(y = new_cases), fill = "blue", alpha = 0.2) +
-      geom_line(aes(x = date_asdate, y = new_cases), color = "blue") +
-      xlab("Date") +
-      ylab("New Cases")
-      
-    # Visualize Total Deaths
-    InitialPlots.TotalDeaths = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('Total deaths in', countryName)) +
-      geom_area(aes(y = total_deaths), fill = "black", alpha = 0.2) +
-      geom_line(aes(x = date_asdate, y = total_deaths), color = "black") +
-      xlab("Date") +
-      ylab("Total Deaths")
-      
-    # Visualize New Deaths
-    InitialPlots.NewDeaths = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('New cases in', countryName)) +
-      geom_area(aes(y = new_deaths), fill = "black", alpha = 0.2) +
-      geom_line(aes(x = date_asdate, y = new_deaths), color = "black") +
-      xlab("Date") +
-      ylab("New Deaths")
-      
-    # Display Plots
-    grid.arrange(InitialPlots.TotalCases, InitialPlots.NewCases,
-                 InitialPlots.TotalDeaths, InitialPlots.NewDeaths, nrow=2, ncol=2)
+  #* Plots Header Warning Messages
+  output$Text_PlotHeaderWarnings = renderText({
+    req(input$selectedVariableY)
+    req(countryFilteredData())
+    print(paste('Updating plots section warning header'))
+    
+    Text_PlotHeaderWarnings_ByModelingData(countryFilteredData(), input$selectedVariableY)
   })
   
+  #* Linear Regression Model Changed
+  CountryModel_LR = reactive({
+    req(countryModelingData())
+    print('(LR) model updating')
+    
+    build_LinearRegressionModel(modelData = countryModelingData())
+  })
+  observeEvent(CountryModel_LR(),{
+    print('(LR) country model has been updated')
+  })
+  #* Linear Regression Model Changed
+  output$Plot_LR = renderPlot({
+    req(CountryModel_LR())
+    print('(LR) plot updating')
+    
+    modelingData = countryModelingData()
+    plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
+         main=paste('New',get_YTitle(),'(Actual vs. LR)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+    lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+  })
+  
+  #* Spline - Cubic - Model Changed
+  CountryModel_SplineCubic = reactive({
+    req(countryModelingData())
+    print('(Spline - Cubic) model updating')
+    
+    build_CubicSplineModel(modelData = countryModelingData())
+  })
+  observeEvent(CountryModel_SplineCubic(),{
+    print('(Spline - Cubic) country model has been updated')
+  })
+  #* Spline - Cubic - Model Changed
+  output$Plot_SplineCubic = renderPlot({
+    req(CountryModel_SplineCubic())
+    print('(Spline - Cubic) plot updating')
+    
+    modelingData = countryModelingData()
+    plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
+         main=paste('New',get_YTitle(),'(Actual vs. Cubic Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+    lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+  })
+  
+  #* Spline - Natural - Model Changed
+  CountryModel_SplineNatural = reactive({
+    req(countryModelingData())
+    print('(Spline - Natural) model updating')
+    
+    build_NaturalSplineModel(modelData = countryModelingData())
+  })
+  observeEvent(CountryModel_SplineNatural(),{
+    print('(Spline - Natural) country model has been updated')
+  })
+  #* Spline - Natural - Model Changed
+  output$Plot_SplineNatural = renderPlot({
+    req(CountryModel_SplineNatural())
+    print('(Spline - Natural) plot updating')
+    
+    modelingData = countryModelingData()
+    plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
+         main=paste('New',get_YTitle(),'(Actual vs. Natural Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+    lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+  })
+  
+  #* Spline - Smooth - Model Changed
+  CountryModel_SplineSmooth = reactive({
+    req(countryModelingData())
+    print('(Spline - Smooth) model updating')
+    
+    build_SmoothSplineModel(modelData = countryModelingData())
+  })
+  observeEvent(CountryModel_SplineSmooth(),{
+    print('(Spline - Smooth) country model has been updated')
+  })
+  #* Spline - Smooth - Model Changed
+  output$Plot_SplineSmooth = renderPlot({
+    req(CountryModel_SplineSmooth())
+    print('(Spline - Smooth) plot updating')
+    
+    modelingData = countryModelingData()
+    plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
+         main=paste('New',get_YTitle(),'(Actual vs. Smooth Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+    lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+  })
+  
+  #************************************************************#
+  #*  Common Functions
+  #************************************************************#
+  
+  get_YTitle = function(){
+    title = unlist(strsplit(input$selectedVariableY, '_'))[2]
+    title = paste(toupper(substring(title, 1,1)), substring(title, 2), sep = '')
+    return(title)
+  }
 }

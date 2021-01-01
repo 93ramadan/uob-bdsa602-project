@@ -63,3 +63,77 @@ d123 = get_Data_ByCountryCode('ALB')
 
 d123[d123$date_asdate >= '2020-04-04' & d123$date_asdate <= '2020-06-01', ]
 
+
+
+### LR
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Vatican', '2020-04-04', '2020-06-01', 'new_cases')
+xx11 = build_LinearRegressionModel(modelData = x1)
+x1_pred = predict(object = xx11, newdata = x1)
+plot(x1$X, x1$Y, pch=20,col="darkgrey")
+lines(x1$X, x1$Y,lty=1,lwd=2,col="darkgrey")
+lines(x1$X, x1_pred,lty=1,lwd=2,col="blue")
+
+## SPLINE - CUBIC - we already define cuts as three (df = 6)
+
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Vatican', '2020-04-04', '2020-06-01', 'new_cases')
+xx11 = build_CubicSplineModel(modelData = x1)
+knotLocaitons = attr(bs(x1$X,df=6),"knots")
+
+x1_pred = predict(object=xx11, newdata=list(X = x1$X),se=TRUE)
+
+fit = x1_pred$fit
+se = x1_pred$se.fit
+bands = cbind(fit-2*se,fit+2*se)
+
+plot(x1$X, x1$Y, pch=20, col="darkgrey", main="Cubic Spline with Knots 3")
+lines(x1$X, fit, lty=1, lwd=2, col="blue")
+matlines(x1$X, bands, lty=2, lwd=2, col="blue")
+
+
+## SPLINE - NATURAL - we already define cuts as three (df = 4)
+
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Vatican', '2020-04-04', '2020-06-01', 'new_cases')
+xx11 = build_NaturalSplineModel(modelData = x1)
+knotLocaitons = attr(bs(x1$X,df=4),"knots")
+
+x1_pred = predict(object=xx11, newdata=list(X = x1$X),se=TRUE)
+
+fit = x1_pred$fit
+se = x1_pred$se.fit
+bands = cbind(fit-2*se,fit+2*se)
+
+plot(x1$X, x1$Y, pch=20, col="darkgrey", main="Natural Spline with Knots 3")
+lines(x1$X, fit, lty=1, lwd=2, col="blue")
+matlines(x1$X, bands, lty=2, lwd=2, col="blue")
+
+## SPLINE - SMOOTH - we already define cuts as three (df = CV)
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Vatican', '2020-04-04', '2020-06-01', 'new_cases')
+xx11 = build_SmoothSplineModel(modelData = x1)
+
+
+x1_pred = predict(object=xx11, newdata=list(X = x1$X),se=TRUE)
+
+fit = x1_pred$y
+se = x1_pred$se.fit
+bands = cbind(fit-2*se,fit+2*se)
+
+plot(x1$X, x1$Y, pch=20, col="darkgrey", main="Smooth Spline with Knots 3")
+lines(xx11,lwd=2,col="blue")
+
+
+lines(x1$X, fit, lty=1, lwd=2, col="blue")
+matlines(x1$X, bands, lty=2, lwd=2, col="blue")
+
+
+
+x1  = lm(NewCasesPerCountry~bs(dayCounter,df=6),data=COVID19)
+prediction = predict(object=Models.cubic.spline[[i]],newdata=list(dayCounter),se=TRUE)
+
+
+Models.cubic.spline[[50]]
+
+
+
+
+
+
