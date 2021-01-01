@@ -37,40 +37,64 @@ server = function(input, output, session) {
     updateSelectInput(session, "selectedCountryCode", choices = choices, selected = "")
   })
   
-  countrySelectionHasOccurred <- reactiveVal(FALSE)
-  
+  countrySelectedHasChanged <- reactiveVal(FALSE)
   #* Country Selection
   countryFullData = reactive({
     req(input$selectedDataSource)
     req(input$selectedCountryCode)
     req(listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryCode)
     print(paste('country changed to = ', input$selectedCountryCode))
-    
-    countrySelectionHasOccurred(TRUE)
+
     get_Data_ByCountryCode(input$selectedDataSource, input$selectedCountryCode)
   })
   observeEvent(countryFullData(), {
     minDate = min(countryFullData()$date_asdate)
     maxDate = max(countryFullData()$date_asdate)
     updateDateRangeInput(session, 'selectedDates', start = minDate, end = maxDate, min = minDate, max = maxDate)
-    countrySelectionHasOccurred(TRUE)
+    # Do not filter data on initial country load - delay to get latest date range values reflected
+    countrySelectedHasChanged(TRUE)
+    if (minDate == input$selectedDates[1] & maxDate == input$selectedDates[2]){
+      # Date has not changed
+      dateRangeHasChanged(FALSE)
+    } else {
+      dateRangeHasChanged(TRUE)
+    }
+  })
+  #* Country Selection - Update Country Name
+  output$Text_CountryName = renderText({
+    req(input$selectedCountryCode)
+    print("Update country name header")
+    listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName
+  })
+  #* Country Selection - Update Initial Analysis (Text)
+  output$Text_InitialAnalysis = renderText({
+    req(countryFilteredData())
+    req((countrySelectedHasChanged() == TRUE & dateRangeHasChanged() == FALSE) |
+          (countrySelectedHasChanged() == FALSE & dateRangeHasChanged() == TRUE))
+    print("Update initial analysis output")
+    
+    Render_InitialAnalysisV2(countryFilteredData(), input$selectedDates[1], input$selectedDates[2])
   })
   
+  dateRangeHasChanged <- reactiveVal(FALSE)
+  #* Country and Date Range Selection
   countryFilteredData = reactive({
     req(countryFullData())
     req(input$selectedDates)
-    req(!countrySelectionHasOccurred())
+    req((countrySelectedHasChanged() == TRUE & dateRangeHasChanged() == FALSE) |
+          (countrySelectedHasChanged() == FALSE & dateRangeHasChanged() == TRUE))
     print(paste('Updating filtered data for = ', input$selectedDates))
-    filter(countryFullData(), date_asdate >= input$selectedDates[1])
+    
+    countryFullData()[(countryFullData()$date_asdate >= input$selectedDates[1] & countryFullData()$date_asdate <= input$selectedDates[2]), ]
   })
   observeEvent(countryFilteredData(), {
     print('in event')
     
   })
   observeEvent(input$selectedDates, {
-    print('in event')
-    countrySelectionHasOccurred(FALSE)
-    
+    # To allow data to be filtered
+    dateRangeHasChanged(TRUE)
+    countrySelectedHasChanged(FALSE)
   })
   
   

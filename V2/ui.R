@@ -18,8 +18,8 @@ ui = fluidPage(
     ),
     # Main Panel
     mainPanel(
-      h2(textOutput("Output_Header")),
-      htmlOutput("Output_InitialAnalysis"),
+      h2(textOutput("Text_CountryName")),
+      htmlOutput("Text_InitialAnalysis"),
       hr(),
       h2('Cases vs. Deaths Overview'),
       plotOutput("Plot_InitialAnalysis"),
