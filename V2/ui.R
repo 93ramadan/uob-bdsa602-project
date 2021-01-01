@@ -12,6 +12,7 @@ ui = fluidPage(
         selectInput('selectedContinent', 'Continent', choices = NULL),
         selectInput('selectedCountryCode', 'Country',  choices = NULL),
         dateRangeInput('selectedDates', 'Modeling Period'),
+        sliderInput("selectedTrainingTestingSplit", "Percentage of Training Dataset (Training vs. Testing Split):", min = 20, max = 90, value = 70, step = 5),
         radioButtons("selectedVariableY", 'Variable of Interest', choices = list('New Cases'='new_cases','New Deaths'='new_deaths'), selected = 'new_cases')
       )),
     column(8, 

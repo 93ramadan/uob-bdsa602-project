@@ -116,12 +116,21 @@ server = function(input, output, session) {
   countryModelingData = reactive({
     req(input$selectedVariableY)
     req(countryFilteredData())
+    req(input$selectedTrainingTestingSplit)
     print(paste('Updating modeling data'))
     
     get_ModelingData_ByCountryData(countryFilteredData(), input$selectedVariableY)
   })
   observeEvent(countryModelingData(),{
     print('country modeling data has been updated')
+  })
+  
+  trainingVStestingSplitHasChanged <- reactiveVal(FALSE)
+  #* Training and Testing Split Selection
+  observeEvent(input$selectedTrainingTestingSplit, {
+    print('training-testing split has been updated')
+    # To allow data to be filtered
+    trainingVStestingSplitHasChanged(TRUE)
   })
   
   #* Plots Header Warning Messages
