@@ -179,6 +179,19 @@ server = function(input, output, session) {
     lines(modelingData_Testing$X, predictionData_Testing, lty=1, lwd=2, col="darkorange1")
     
     grid()
+    
+    # Model Evaluations
+    
+    ##* Text - LR Message
+    #output$Text_Plot_LR = renderText({
+    #  req(CountryModel_LR())
+    #  conclusionMessage = '<ul>'
+    #  
+    #  conclusionMessage = paste(conclusionMessage,'<li>', 'Traing MSE:', '<li>')
+    #  
+    #  conclusionMessage = paste(conclusionMessage,'</ul>')
+    #  conclusionMessage
+    #})
   })
   
   #* Spline - Cubic - Model Changed
@@ -340,6 +353,8 @@ server = function(input, output, session) {
     lines(modelingData_Testing$X, predictionData_Testing.Y, lty=1, lwd=2, col="darkorange1")
     
     grid()
+    
+    
   })
   
   #************************************************************#
