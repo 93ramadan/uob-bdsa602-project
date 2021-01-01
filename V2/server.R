@@ -55,29 +55,32 @@ server = function(input, output, session) {
     }
   })
   
+  updating_type_inprogress <- reactiveVal(1)
+  
   #* Country Selection
   observeEvent(input$selectedCountryCode, {
     selectedCountryCode = input$selectedCountryCode
+    updating_type_inprogress(1)
     
     print(paste('country changed to = ', selectedCountryCode))
     
     if (!is.null(session$userData$modelingDatesEvent)){
       session$userData$modelingDatesEvent$destroy()
     }
-
+    removeUI("dateRangeSelection")
+    removeUI("modelingDates")
     output$dateRangeSelection <- renderUI({ })
     output$Output_Header = renderText({ })
     output$Output_InitialAnalysis = renderText({ })
     output$Plot_InitialAnalysis = renderPlot({ })
    
     if (!is.null(selectedCountryCode) & selectedCountryCode != ''){
+      selectedCountryName = get_CountryName_ByCountryCode(input$selectedDataSource, input$selectedCountryCode)
       
       #* Update Output Header
       output$Output_Header = renderText({
         print("Update country name header")
-        if(!is.null(input$selectedCountryCode) & input$selectedCountryCode != ''){
-          get_CountryName_ByCountryCode(input$selectedDataSource, input$selectedCountryCode)
-        }
+        selectedCountryName
       })
       
       minDate = min(countryData()$date_asdate)
@@ -86,21 +89,24 @@ server = function(input, output, session) {
         dateRangeInput(inputId = "modelingDates", 'Modeling Period', start = minDate, end = maxDate, min = minDate, max = maxDate)
       })
       
+      update_InitialAnalysis(output, selectedCountryName, countryData = countryData(), minDate = minDate, maxDate = maxDate)
+     
       #* Date Range Selection
       session$userData$modelingDatesEvent = observeEvent(input$modelingDates, {
         modelingDates = input$modelingDates
         print(paste('modeling dates changed to = ', modelingDates[1], "until", modelingDates[2]))
-
+        
+        #req(!updating_type_inprogress())
         #* Update Output Initial Analysis
         output$Output_InitialAnalysis = renderText({
-          print("Update initial analysis output")
+          print("From Date - Update initial analysis output")
           if (!is.null(input$selectedCountryCode) & input$selectedCountryCode != '' & !is.null(input$modelingDates)){
             Render_InitialAnalysisV2(countryData(), input$modelingDates[1], input$modelingDates[2])
           } else {
             "Make some selections please ..."
           }
         })
-        
+
         #* Plot Initial Analysis
         output$Plot_InitialAnalysis = renderPlot({
           print("Update initial analysis plot")
@@ -143,11 +149,12 @@ server = function(input, output, session) {
         })
         
         
-      })
+      }, ignoreInit = TRUE, autoDestroy = TRUE)
       
     }
   })
   
+ 
   
   #************************************************************#
   #*  App Variables
@@ -181,7 +188,55 @@ server = function(input, output, session) {
   #*  Output Plots
   #************************************************************#
   
+}
+
+update_InitialAnalysis = function(output, countryName, countryData, minDate, maxDate){
   
-
-
+  #* Update Output Initial Analysis
+  output$Output_InitialAnalysis = renderText({
+    print("From Country - Update initial analysis output")
+    if (!is.null(countryData) & !is.null(minDate) & !is.null(maxDate)){
+      Render_InitialAnalysisV2(countryData, minDate, maxDate)
+    } else {
+      "Make some selections please ..."
+    }
+  })
+  
+  #* Plot Initial Analysis
+  output$Plot_InitialAnalysis = renderPlot({
+    print("From Country - Update initial analysis plot")
+      
+    # Visualize Total Cases
+    InitialPlots.TotalCases = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('Total cases in', countryName)) +
+      geom_area(aes(y = total_cases), fill = "blue", alpha = 0.2) +
+      geom_line(aes(x = date_asdate, y = total_cases), color = "blue") +
+      xlab("Date") +
+      ylab("Total Cases")
+      
+    # Visualize New Cases
+    InitialPlots.NewCases = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('New cases in', countryName)) +
+      geom_area(aes(y = new_cases), fill = "blue", alpha = 0.2) +
+      geom_line(aes(x = date_asdate, y = new_cases), color = "blue") +
+      xlab("Date") +
+      ylab("New Cases")
+      
+    # Visualize Total Deaths
+    InitialPlots.TotalDeaths = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('Total deaths in', countryName)) +
+      geom_area(aes(y = total_deaths), fill = "black", alpha = 0.2) +
+      geom_line(aes(x = date_asdate, y = total_deaths), color = "black") +
+      xlab("Date") +
+      ylab("Total Deaths")
+      
+    # Visualize New Deaths
+    InitialPlots.NewDeaths = ggplot(countryData, aes(x = date_asdate)) + ggtitle(paste('New cases in', countryName)) +
+      geom_area(aes(y = new_deaths), fill = "black", alpha = 0.2) +
+      geom_line(aes(x = date_asdate, y = new_deaths), color = "black") +
+      xlab("Date") +
+      ylab("New Deaths")
+      
+    # Display Plots
+    grid.arrange(InitialPlots.TotalCases, InitialPlots.NewCases,
+                 InitialPlots.TotalDeaths, InitialPlots.NewDeaths, nrow=2, ncol=2)
+  })
+  
 }
