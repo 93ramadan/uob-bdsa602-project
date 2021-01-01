@@ -66,14 +66,26 @@ server = function(input, output, session) {
     print("Update country name header")
     listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName
   })
-  #* Country Selection - Update Initial Analysis (Text)
+  
+  #* Country or Date Range Selection - Update Initial Analysis (Text)
   output$Text_InitialAnalysis = renderText({
     req(countryFilteredData())
     req((countrySelectedHasChanged() == TRUE & dateRangeHasChanged() == FALSE) |
           (countrySelectedHasChanged() == FALSE & dateRangeHasChanged() == TRUE))
-    print("Update initial analysis output")
+    print("Update initial analysis output text")
     
-    Render_InitialAnalysisV2(countryFilteredData(), input$selectedDates[1], input$selectedDates[2])
+    Text_InitialAnalysis(countryFilteredData(), input$selectedDates[1], input$selectedDates[2])
+  })
+  
+  #* Country or Date Range Selection - Update Initial Analysis (Plots)
+  output$Plot_InitialAnalysis = renderPlot({
+    req(countryFilteredData())
+    req((countrySelectedHasChanged() == TRUE & dateRangeHasChanged() == FALSE) |
+          (countrySelectedHasChanged() == FALSE & dateRangeHasChanged() == TRUE))
+    print("Update initial analysis output plots")
+    
+    countryName = listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName
+    Plot_InitialAnalysis(countryName, countryFilteredData())
   })
   
   dateRangeHasChanged <- reactiveVal(FALSE)
@@ -88,7 +100,7 @@ server = function(input, output, session) {
     countryFullData()[(countryFullData()$date_asdate >= input$selectedDates[1] & countryFullData()$date_asdate <= input$selectedDates[2]), ]
   })
   observeEvent(countryFilteredData(), {
-    print('in event')
+    print('country filtered data has been updated')
     
   })
   observeEvent(input$selectedDates, {
@@ -166,7 +178,7 @@ server = function(input, output, session) {
   #      output$Output_InitialAnalysis = renderText({
   #        print("From Date - Update initial analysis output")
   #        if (!is.null(input$selectedCountryCode) & input$selectedCountryCode != '' & !is.null(input$modelingDates)){
-  #          Render_InitialAnalysisV2(countryData(), input$modelingDates[1], input$modelingDates[2])
+  #          Text_InitialAnalysis(countryData(), input$modelingDates[1], input$modelingDates[2])
   #        } else {
   #          "Make some selections please ..."
   #        }
@@ -261,7 +273,7 @@ update_InitialAnalysis = function(output, countryName, countryData, minDate, max
   output$Output_InitialAnalysis = renderText({
     print("From Country - Update initial analysis output")
     if (!is.null(countryData) & !is.null(minDate) & !is.null(maxDate)){
-      Render_InitialAnalysisV2(countryData, minDate, maxDate)
+      Text_InitialAnalysis(countryData, minDate, maxDate)
     } else {
       "Make some selections please ..."
     }
