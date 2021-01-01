@@ -71,7 +71,7 @@ Text_InitialAnalysis = function(countryData, selectedStart, selectedEnd){
   
   # Study Time-frame (Study Data)
   StudyTimeFrame.Start = as.Date(selectedStart)
-  StudyTimeFrame.End = as.Date(selectedEnd)
+  StudyTimeFrame.End = as.Date(selectedEnd)+1
   StudyTimeFrame.TotalDays = as.numeric((StudyTimeFrame.End - StudyTimeFrame.Start), units="days")
   initialAnalysisOutput = paste(initialAnalysisOutput, 
                                 "The study timeframe starts from",

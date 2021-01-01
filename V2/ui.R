@@ -8,7 +8,7 @@ ui = fluidPage(
   fluidRow(
     column(4, 
       wellPanel(
-        radioButtons("selectedDataSource", 'Data Source', choices = list('Local'='local','Our World In Date'='owid'), selected = 'local'),
+        radioButtons("selectedDataSource", 'Data Source', choices = list('Local'='local','Our World In Data'='owid'), selected = 'local'),
         selectInput('selectedContinent', 'Continent', choices = NULL),
         selectInput('selectedCountryCode', 'Country',  choices = NULL),
         dateRangeInput('selectedDates', 'Modeling Period'),

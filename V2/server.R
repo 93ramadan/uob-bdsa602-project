@@ -183,15 +183,15 @@ server = function(input, output, session) {
     # Model Evaluations
     
     ##* Text - LR Message
-    #output$Text_Plot_LR = renderText({
-    #  req(CountryModel_LR())
-    #  conclusionMessage = '<ul>'
+    output$Text_Plot_LR = renderText({
+      req(CountryModel_LR())
+      conclusionMessage = '<ul>'
     #  
-    #  conclusionMessage = paste(conclusionMessage,'<li>', 'Traing MSE:', '<li>')
+      conclusionMessage = paste(conclusionMessage,'<li>', 'Traing MSE:', '<li>')
     #  
-    #  conclusionMessage = paste(conclusionMessage,'</ul>')
-    #  conclusionMessage
-    #})
+      conclusionMessage = paste(conclusionMessage,'</ul>')
+      conclusionMessage
+    })
   })
   
   #* Spline - Cubic - Model Changed
