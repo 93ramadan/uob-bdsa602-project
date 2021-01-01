@@ -147,10 +147,16 @@ server = function(input, output, session) {
     req(CountryModel_LR())
     print('(LR) plot updating')
     
+    # Prepare Data vs Prediction
     modelingData = countryModelingData()
+    predictionData = predict(object = CountryModel_LR(), newdata = modelingData)
+    
+    # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'(Actual vs. LR)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+    lines(modelingData$X, predictionData, lty=1, lwd=2, col="blue")
+    grid()
   })
   
   #* Spline - Cubic - Model Changed
@@ -168,10 +174,24 @@ server = function(input, output, session) {
     req(CountryModel_SplineCubic())
     print('(Spline - Cubic) plot updating')
     
+    # Prepare Data vs Prediction
     modelingData = countryModelingData()
+    predictionData = predict(object=CountryModel_SplineCubic(), newdata=list(X = modelingData$X), se=TRUE)
+    predictionData.Y = predictionData$fit
+    predictionData.SE = predictionData$se.fit
+    predictionData.CI = cbind(predictionData.Y-2*predictionData.SE, predictionData.Y+2*predictionData.SE)
+    
+    # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'(Actual vs. Cubic Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+    lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
+    matlines(modelingData$X, predictionData.CI, lty=2, lwd=2, col="red")
+    grid()
+    
+    # Plot Knot Locations
+    modelKnotLocations = attr(bs(modelingData$X, df=6), "knots")
+    abline(v = as.numeric(c(modelKnotLocations)), lty = 2)
   })
   
   #* Spline - Natural - Model Changed
@@ -189,10 +209,24 @@ server = function(input, output, session) {
     req(CountryModel_SplineNatural())
     print('(Spline - Natural) plot updating')
     
+    # Prepare Data vs Prediction
     modelingData = countryModelingData()
+    predictionData = predict(object=CountryModel_SplineNatural(), newdata=list(X = modelingData$X), se=TRUE)
+    predictionData.Y = predictionData$fit
+    predictionData.SE = predictionData$se.fit
+    predictionData.CI = cbind(predictionData.Y-2*predictionData.SE, predictionData.Y+2*predictionData.SE)
+    
+    # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'(Actual vs. Natural Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+    lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
+    matlines(modelingData$X, predictionData.CI, lty=2, lwd=2, col="red")
+    grid()
+    
+    # Plot Knot Locations
+    modelKnotLocations = attr(ns(modelingData$X, df=4), "knots")
+    abline(v = as.numeric(c(modelKnotLocations)), lty = 2)
   })
   
   #* Spline - Smooth - Model Changed
@@ -210,10 +244,17 @@ server = function(input, output, session) {
     req(CountryModel_SplineSmooth())
     print('(Spline - Smooth) plot updating')
     
+    # Prepare Data vs Prediction
     modelingData = countryModelingData()
+    predictionData = predict(object=CountryModel_SplineSmooth(), newdata=list(X = modelingData$X))
+    predictionData.Y = predictionData$y
+    
+    # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'(Actual vs. Smooth Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
+    lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
+    grid()
   })
   
   #************************************************************#
