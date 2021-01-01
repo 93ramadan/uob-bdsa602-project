@@ -116,7 +116,6 @@ server = function(input, output, session) {
   countryModelingData = reactive({
     req(input$selectedVariableY)
     req(countryFilteredData())
-    req(input$selectedTrainingTestingSplit)
     print(paste('Updating modeling data'))
     
     get_ModelingData_ByCountryData(countryFilteredData(), input$selectedVariableY)
@@ -145,9 +144,10 @@ server = function(input, output, session) {
   #* Linear Regression Model Changed
   CountryModel_LR = reactive({
     req(countryModelingData())
+    req(input$selectedTrainingTestingSplit)
     print('(LR) model updating')
     
-    build_LinearRegressionModel(modelData = countryModelingData())
+    build_LinearRegressionModel(modelData = countryModelingData(), input$selectedTrainingTestingSplit)
   })
   observeEvent(CountryModel_LR(),{
     print('(LR) country model has been updated')
@@ -157,25 +157,37 @@ server = function(input, output, session) {
     req(CountryModel_LR())
     print('(LR) plot updating')
     
+    # Get Country Name
     countryName = get_countryName()
-    # Prepare Data vs Prediction
-    modelingData = countryModelingData()
-    predictionData = predict(object = CountryModel_LR(), newdata = modelingData)
     
-    # Plots
+    # Collect Data (Actual vs Training vs. Testing)
+    modelingData = countryModelingData()
+    modelingData_Training = get_trainingSplit(modelingData)
+    modelingData_Testing = get_testingSplit(modelingData)
+    
+    # Predict Data (Training vs. Testing)
+    predictionData_Training = predict(object = CountryModel_LR(), newdata = modelingData_Training)
+    predictionData_Testing = predict(object = CountryModel_LR(), newdata = modelingData_Testing)
+    
+    # Plot - Actual
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. LR)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
-    lines(modelingData$X, predictionData, lty=1, lwd=2, col="blue")
+    # Plot - Training
+    lines(modelingData_Training$X, predictionData_Training, lty=1, lwd=2, col="blue")
+    # Plot - Testing
+    lines(modelingData_Testing$X, predictionData_Testing, lty=1, lwd=2, col="darkorange1")
+    
     grid()
   })
   
   #* Spline - Cubic - Model Changed
   CountryModel_SplineCubic = reactive({
     req(countryModelingData())
+    req(input$selectedTrainingTestingSplit)
     print('(Spline - Cubic) model updating')
     
-    build_CubicSplineModel(modelData = countryModelingData())
+    build_CubicSplineModel(modelData = countryModelingData(), input$selectedTrainingTestingSplit)
   })
   observeEvent(CountryModel_SplineCubic(),{
     print('(Spline - Cubic) country model has been updated')
@@ -185,33 +197,55 @@ server = function(input, output, session) {
     req(CountryModel_SplineCubic())
     print('(Spline - Cubic) plot updating')
     
+    # Get Country Name
     countryName = get_countryName()
-    # Prepare Data vs Prediction
-    modelingData = countryModelingData()
-    predictionData = predict(object=CountryModel_SplineCubic(), newdata=list(X = modelingData$X), se=TRUE)
-    predictionData.Y = predictionData$fit
-    predictionData.SE = predictionData$se.fit
-    predictionData.CI = cbind(predictionData.Y-2*predictionData.SE, predictionData.Y+2*predictionData.SE)
     
-    # Plots
+    # Collect Data (Actual vs Training vs. Testing)
+    modelingData = countryModelingData()
+    modelingData_Training = get_trainingSplit(modelingData)
+    modelingData_Testing = get_testingSplit(modelingData)
+    
+    # Predict Data (Training vs. Testing)
+    predictionData_Training = predict(object=CountryModel_SplineCubic(), newdata=list(X = modelingData_Training$X), se=TRUE)
+    predictionData_Training.Y = predictionData_Training$fit
+    predictionData_Training.SE = predictionData_Training$se.fit
+    predictionData_Training.CI = cbind(predictionData_Training.Y-2*predictionData_Training.SE, predictionData_Training.Y+2*predictionData_Training.SE)
+    
+    if (length(modelingData_Testing$X) > 0){
+      predictionData_Testing = predict(object=CountryModel_SplineCubic(), newdata=list(X = modelingData_Testing$X), se=TRUE)
+      predictionData_Testing.Y = predictionData_Testing$fit
+      predictionData_Testing.SE = predictionData_Testing$se.fit
+      predictionData_Testing.CI = cbind(predictionData_Testing.Y-2*predictionData_Testing.SE, predictionData_Testing.Y+2*predictionData_Testing.SE)
+    }
+    
+    # Plot - Actual
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Cubic Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
-    lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
-    matlines(modelingData$X, predictionData.CI, lty=2, lwd=2, col="red")
-    grid()
     
+    # Plot - Training
+    lines(modelingData_Training$X, predictionData_Training.Y, lty=1, lwd=2, col="blue")
+    matlines(modelingData_Training$X, predictionData_Training.CI, lty=2, lwd=2, col="red")
     # Plot Knot Locations
-    modelKnotLocations = attr(bs(modelingData$X, df=6), "knots")
+    modelKnotLocations = attr(bs(modelingData_Training$X, df=6), "knots")
     abline(v = as.numeric(c(modelKnotLocations)), lty = 2)
+    
+    if (length(modelingData_Testing$X) > 0){
+      # Plot - Testing
+      lines(modelingData_Testing$X, predictionData_Testing.Y, lty=1, lwd=2, col="darkorange1")
+      matlines(modelingData_Testing$X, predictionData_Testing.CI, lty=2, lwd=2, col="darkorchid2")
+    }
+    
+    grid()
   })
   
   #* Spline - Natural - Model Changed
   CountryModel_SplineNatural = reactive({
     req(countryModelingData())
+    req(input$selectedTrainingTestingSplit)
     print('(Spline - Natural) model updating')
     
-    build_NaturalSplineModel(modelData = countryModelingData())
+    build_NaturalSplineModel(modelData = countryModelingData(), input$selectedTrainingTestingSplit)
   })
   observeEvent(CountryModel_SplineNatural(),{
     print('(Spline - Natural) country model has been updated')
@@ -221,33 +255,55 @@ server = function(input, output, session) {
     req(CountryModel_SplineNatural())
     print('(Spline - Natural) plot updating')
     
+    # Get Country Name
     countryName = get_countryName()
-    # Prepare Data vs Prediction
-    modelingData = countryModelingData()
-    predictionData = predict(object=CountryModel_SplineNatural(), newdata=list(X = modelingData$X), se=TRUE)
-    predictionData.Y = predictionData$fit
-    predictionData.SE = predictionData$se.fit
-    predictionData.CI = cbind(predictionData.Y-2*predictionData.SE, predictionData.Y+2*predictionData.SE)
     
-    # Plots
+    # Collect Data (Actual vs Training vs. Testing)
+    modelingData = countryModelingData()
+    modelingData_Training = get_trainingSplit(modelingData)
+    modelingData_Testing = get_testingSplit(modelingData)
+    
+    # Predict Data (Training vs. Testing)
+    predictionData_Training = predict(object=CountryModel_SplineNatural(), newdata=list(X = modelingData_Training$X), se=TRUE)
+    predictionData_Training.Y = predictionData_Training$fit
+    predictionData_Training.SE = predictionData_Training$se.fit
+    predictionData_Training.CI = cbind(predictionData_Training.Y-2*predictionData_Training.SE, predictionData_Training.Y+2*predictionData_Training.SE)
+    
+    if (length(modelingData_Testing$X) > 0){
+      predictionData_Testing = predict(object=CountryModel_SplineNatural(), newdata=list(X = modelingData_Testing$X), se=TRUE)
+      predictionData_Testing.Y = predictionData_Testing$fit
+      predictionData_Testing.SE = predictionData_Testing$se.fit
+      predictionData_Testing.CI = cbind(predictionData_Testing.Y-2*predictionData_Testing.SE, predictionData_Testing.Y+2*predictionData_Testing.SE)
+    }
+    
+    # Plot - Actual
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Natural Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
-    lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
-    matlines(modelingData$X, predictionData.CI, lty=2, lwd=2, col="red")
-    grid()
     
+    # Plot - Training
+    lines(modelingData_Training$X, predictionData_Training.Y, lty=1, lwd=2, col="blue")
+    matlines(modelingData_Training$X, predictionData_Training.CI, lty=2, lwd=2, col="red")
     # Plot Knot Locations
-    modelKnotLocations = attr(ns(modelingData$X, df=4), "knots")
+    modelKnotLocations = attr(ns(modelingData_Training$X, df=4), "knots")
     abline(v = as.numeric(c(modelKnotLocations)), lty = 2)
+    
+    if (length(modelingData_Testing$X) > 0){
+      # Plot - Testing
+      lines(modelingData_Testing$X, predictionData_Testing.Y, lty=1, lwd=2, col="darkorange1")
+      matlines(modelingData_Testing$X, predictionData_Testing.CI, lty=2, lwd=2, col="darkorchid2")
+    }
+ 
+    grid()
   })
   
   #* Spline - Smooth - Model Changed
   CountryModel_SplineSmooth = reactive({
     req(countryModelingData())
+    req(input$selectedTrainingTestingSplit)
     print('(Spline - Smooth) model updating')
     
-    build_SmoothSplineModel(modelData = countryModelingData())
+    build_SmoothSplineModel(modelData = countryModelingData(), input$selectedTrainingTestingSplit)
   })
   observeEvent(CountryModel_SplineSmooth(),{
     print('(Spline - Smooth) country model has been updated')
@@ -257,17 +313,32 @@ server = function(input, output, session) {
     req(CountryModel_SplineSmooth())
     print('(Spline - Smooth) plot updating')
     
+    # Get Country Name
     countryName = get_countryName()
-    # Prepare Data vs Prediction
-    modelingData = countryModelingData()
-    predictionData = predict(object=CountryModel_SplineSmooth(), newdata=list(X = modelingData$X))
-    predictionData.Y = predictionData$y
     
-    # Plots
+    # Collect Data (Actual vs Training vs. Testing)
+    modelingData = countryModelingData()
+    modelingData_Training = get_trainingSplit(modelingData)
+    modelingData_Testing = get_testingSplit(modelingData)
+    
+    # Predict Data (Training vs. Testing)
+    predictionData_Training = predict(object=CountryModel_SplineSmooth(), modelingData_Training$X)
+    predictionData_Training.Y = predictionData_Training$y
+    
+    predictionData_Testing = predict(object=CountryModel_SplineSmooth(), modelingData_Testing$X)
+    predictionData_Testing.Y = predictionData_Testing$y
+    
+    # Plot - Actual
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
          main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Smooth Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
-    lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
+    
+    # Plot - Training
+    lines(modelingData_Training$X, predictionData_Training.Y, lty=1, lwd=2, col="blue")
+    
+    # Plot - Testing
+    lines(modelingData_Testing$X, predictionData_Testing.Y, lty=1, lwd=2, col="darkorange1")
+    
     grid()
   })
   
@@ -283,5 +354,26 @@ server = function(input, output, session) {
   
   get_countryName = function(){
     return(listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName)
+  }
+  
+  get_trainingSplit = function(modelData){
+    # Training vs Testing Split
+    sampleSize = dim(modelData)[1]
+    modelingTrainingSet.Count = round((sampleSize * (input$selectedTrainingTestingSplit/100)), 0)
+    
+    # Create Training Data Set
+    modelData_Training = modelData[1:modelingTrainingSet.Count, ]
+    return(modelData_Training)
+  }
+  
+  get_testingSplit = function(modelData){
+    # Testing Split
+    sampleSize = dim(modelData)[1]
+    modelingTrainingSet.Count = round((sampleSize * (input$selectedTrainingTestingSplit/100)), 0)
+    modelingTestingSet.Count = round((sampleSize * (1-(input$selectedTrainingTestingSplit/100))), 0)
+    
+    # Create Testing Data Set
+    modelData_Testing = tail(modelData, modelingTestingSet.Count)
+    return(modelData_Testing)
   }
 }

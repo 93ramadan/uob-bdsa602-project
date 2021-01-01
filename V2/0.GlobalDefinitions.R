@@ -175,7 +175,7 @@ get_ModelingData_ByCountryCodeAndDates = function(selectedDataSource, selectedCo
 }
 
 get_ModelingData_ByCountryData = function(countryData, interestedY){
-  # Get Total Days * Prepare Dates
+  # Get Total Days & Prepare Dates
   StudyTimeFrame.Start = min(countryData$date_asdate)
   StudyTimeFrame.End = max(countryData$date_asdate)+1
   StudyTimeFrame.TotalDays = as.numeric((StudyTimeFrame.End - StudyTimeFrame.Start), units="days")
@@ -189,32 +189,59 @@ get_ModelingData_ByCountryData = function(countryData, interestedY){
   colnames(modelingData)[2] = 'Y'
   
   # Clean NA
-  #if (sum(is.na(modelingData$Y)) > 0){
   modelingData$Y[is.na(modelingData$Y)] <- 0
-  #}
   
   # Clean Negatives
-    #if (sum(modelingData$Y < 0) > 0){
-    #modelingData[(modelingData$Y < 0), ]$Y = 0
-    #}
-  
+  modelingData$Y[(modelingData$Y < 0)] <- 0
+ 
   return(modelingData)
 }
 
-build_LinearRegressionModel = function(modelData){
-  return(glm(formula=(Y ~ X), data=modelData))
+build_LinearRegressionModel = function(modelData, trainingSplit){
+  # Training vs Testing Split
+  sampleSize = dim(modelData)[1]
+  modelingTrainingSet.Count = round((sampleSize * (trainingSplit/100)), 0)
+  modelingTestingSet.Count = round((sampleSize * (1-(trainingSplit/100))), 0)
+  
+  # Create Training Data Set
+  modelData_Training = modelData[1:modelingTrainingSet.Count, ]
+  
+  return(glm(formula=(Y ~ X), data=modelData_Training))
 }
 
-build_CubicSplineModel = function(modelData){
-  return(lm(formula=(Y ~ bs(X, df=6)), data=modelData))
+build_CubicSplineModel = function(modelData, trainingSplit){
+  # Training vs Testing Split
+  sampleSize = dim(modelData)[1]
+  modelingTrainingSet.Count = round((sampleSize * (trainingSplit/100)), 0)
+  modelingTestingSet.Count = round((sampleSize * (1-(trainingSplit/100))), 0)
+  
+  # Create Training Data Set
+  modelData_Training = modelData[1:modelingTrainingSet.Count, ]
+  
+  return(lm(formula=(Y ~ bs(X, df=6)), data=modelData_Training))
 }
 
-build_NaturalSplineModel = function(modelData){
-  return(lm(formula=(Y ~ ns(X, df=4)), data=modelData))
+build_NaturalSplineModel = function(modelData, trainingSplit){
+  # Training vs Testing Split
+  sampleSize = dim(modelData)[1]
+  modelingTrainingSet.Count = round((sampleSize * (trainingSplit/100)), 0)
+  modelingTestingSet.Count = round((sampleSize * (1-(trainingSplit/100))), 0)
+  
+  # Create Training Data Set
+  modelData_Training = modelData[1:modelingTrainingSet.Count, ]
+  
+  return(lm(formula=(Y ~ ns(X, df=4)), data=modelData_Training))
 }
 
-build_SmoothSplineModel = function(modelData){
-  optimalDF = smooth.spline(x=modelData$X, y=modelData$Y, cv=TRUE)
-  return(optimalDF)
+build_SmoothSplineModel = function(modelData, trainingSplit){
+  # Training vs Testing Split
+  sampleSize = dim(modelData)[1]
+  modelingTrainingSet.Count = round((sampleSize * (trainingSplit/100)),0)
+  modelingTestingSet.Count = round((sampleSize * (1-(trainingSplit/100))), 0)
+  
+  # Create Training Data Set
+  modelData_Training = modelData[1:modelingTrainingSet.Count, ]
+  
+  return(smooth.spline(x=modelData_Training$X, y=modelData_Training$Y, cv=TRUE))
 }
 
