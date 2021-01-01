@@ -27,9 +27,21 @@ ui = fluidPage(
   ),
   fluidRow(
     column(12, align="center", span(htmlOutput("Text_PlotHeaderWarnings"), style="color:red")),
-    column(3, plotOutput("Plot_LR", height = "400px")),
-    column(3, plotOutput("Plot_SplineCubic", height = "400px")),
-    column(3, plotOutput("Plot_SplineNatural", height = "400px")),
-    column(3, plotOutput("Plot_SplineSmooth", height = "400px")),
+    column(3, align="center",
+      plotOutput("Plot_LR", height = "400px"),
+      htmlOutput("Text_Plot_LR")
+    ),
+    column(3, align="center",
+      plotOutput("Plot_SplineCubic", height = "400px"),
+      htmlOutput("Text_Plot_SplineCubic")
+    ),
+    column(3, align="center",
+      plotOutput("Plot_SplineNatural", height = "400px"),
+      htmlOutput("Text_Plot_SplineNatural")
+    ),
+    column(3, align="center",
+      plotOutput("Plot_SplineSmooth", height = "400px"),
+      htmlOutput("Text_Plot_SplineSmooth")
+    ),
   )
 )
