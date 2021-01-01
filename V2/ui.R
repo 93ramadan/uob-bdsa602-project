@@ -11,8 +11,10 @@ ui = fluidPage(
     sidebarPanel(
       #width = 3,
       radioButtons("selectedDataSource", 'Data Source', choices = list('Local'='local','Our World In Date'='owid'), selected = 'local'),
-      uiOutput("continentSelection"),
-      uiOutput("countrySelection"),
+      selectInput('selectedContinent', 'Continent', c("")),
+      selectInput('selectedCountryCode', 'Country', c("")),
+      #uiOutput("continentSelection"),
+      #uiOutput("countrySelection"),
       uiOutput("dateRangeSelection"),
       radioButtons("selectedVariableY", 'Variable of Interest', choices = list('Total Cases'='total_cases','New Cases'='new_cases','New Deaths'='new_deaths'), selected = 'total_cases'),
     ),

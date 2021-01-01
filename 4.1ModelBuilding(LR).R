@@ -20,5 +20,7 @@ for (i in 1:total.conutries)
   Models.GLR[[i]] = glm(NewCasesPerCountry ~ dayCounter )
 }
 
-summary(Models.LR[[3]])
-summary(Models.GLR[[3]])
+summary(Models.LR[[1]])
+summary(Models.GLR[[1]])
+
+fix(COVID19)
