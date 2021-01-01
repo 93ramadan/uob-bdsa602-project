@@ -180,16 +180,15 @@ server = function(input, output, session) {
     
     grid()
     
-    # Model Evaluations
-    
-    ##* Text - LR Message
+    #* Model Evaluations
+    #* Text - LR Message
     output$Text_Plot_LR = renderText({
       req(CountryModel_LR())
-      conclusionMessage = '<ul>'
-    #  
-      conclusionMessage = paste(conclusionMessage,'<li>', 'Traing MSE:', '<li>')
-    #  
-      conclusionMessage = paste(conclusionMessage,'</ul>')
+      conclusionMessage = ''
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2) )
+      testingMSE = mean((modelingData_Testing$Y-predictionData_Testing)^2)
+      conclusionMessage = paste(conclusionMessage,'<br/><b> Testing MSE </b> =', round(testingMSE,2) )
       conclusionMessage
     })
   })
@@ -250,6 +249,20 @@ server = function(input, output, session) {
     }
     
     grid()
+    
+    #* Model Evaluations
+    #* Text - Spline-Cubic Message
+    output$Text_Plot_SplineCubic = renderText({
+      req(CountryModel_SplineCubic())
+      conclusionMessage = ''
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2) )
+      if (length(modelingData_Testing$X) > 0){
+        testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
+        conclusionMessage = paste(conclusionMessage,'<br/><b> Testing MSE </b> =', round(testingMSE,2) )
+      }
+      conclusionMessage
+    })
   })
   
   #* Spline - Natural - Model Changed
@@ -308,6 +321,20 @@ server = function(input, output, session) {
     }
  
     grid()
+    
+    #* Model Evaluations
+    #* Text - Spline-Natural Message
+    output$Text_Plot_SplineNatural = renderText({
+      req(CountryModel_SplineNatural())
+      conclusionMessage = ''
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2) )
+      if (length(modelingData_Testing$X) > 0){
+        testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
+        conclusionMessage = paste(conclusionMessage,'<br/><b> Testing MSE </b> =', round(testingMSE,2) )
+      }
+      conclusionMessage
+    })
   })
   
   #* Spline - Smooth - Model Changed
@@ -354,7 +381,21 @@ server = function(input, output, session) {
     
     grid()
     
+    grid()
     
+    #* Model Evaluations
+    #* Text - Spline-Smooth Message
+    output$Text_Plot_SplineSmooth = renderText({
+      req(CountryModel_SplineSmooth())
+      conclusionMessage = ''
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2) )
+      #if (length(modelingData_Testing$X) > 0){
+        testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
+        conclusionMessage = paste(conclusionMessage,'<br/><b> Testing MSE </b> =', round(testingMSE,2) )
+      #}
+      conclusionMessage
+    })
   })
   
   #************************************************************#
