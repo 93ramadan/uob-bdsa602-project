@@ -28,3 +28,10 @@ Local_List_Continents = unique(LocalDataSet$continent)
 Local_List_Countries = unique(rbind(data.frame("ContinentName" = LocalDataSet$continent, "CountryCode" = LocalDataSet$location, "CountryName" = LocalDataSet$location)))
 row.names(Local_List_Continents) = NULL
 row.names(Local_List_Countries) = NULL
+
+# Sort
+List_Continents = arrange(List_Continents, (ContinentName))
+List_Countries = arrange(List_Countries, (CountryName))
+
+Local_List_Continents = sort(Local_List_Continents)
+Local_List_Countries = arrange(Local_List_Countries, (CountryName))

@@ -14,7 +14,7 @@ ui = fluidPage(
       selectInput('selectedContinent', 'Continent', choices = NULL),
       selectInput('selectedCountryCode', 'Country',  choices = NULL),
       dateRangeInput('selectedDates', 'Modeling Period'),
-      radioButtons("selectedVariableY", 'Variable of Interest', choices = list('Total Cases'='total_cases','New Cases'='new_cases','New Deaths'='new_deaths'), selected = 'total_cases'),
+      radioButtons("selectedVariableY", 'Variable of Interest', choices = list('New Cases'='new_cases','New Deaths'='new_deaths'), selected = 'total_cases'),
     ),
     # Main Panel
     mainPanel(

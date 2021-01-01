@@ -58,30 +58,8 @@ get_Data_ByCountryCode = function(selectedDataSource, selectedCountryCode){
   # Add Date Field
   countryData$date_asdate = as.Date(countryData$date, "%Y-%m-%d")
   # Order By Date
-  countryData[order(countryData$date_asdate),1]
+  countryData = arrange(countryData, (date_asdate))
   return(countryData)
-}
-
-get_ModelingData_ByCountryCodeAndDates = function(selectedDataSource, selectedCountryCode, selectedStart, selectedEnd, interestedY){
-  # Get Data
-  countryData = get_Data_ByCountryCode(selectedDataSource, selectedCountryCode)
-  
-  # Get Total Days * Prepare Dates
-  StudyTimeFrame.Start = as.Date(selectedStart)
-  StudyTimeFrame.End = as.Date(selectedEnd)
-  StudyTimeFrame.TotalDays = as.numeric((StudyTimeFrame.End - StudyTimeFrame.Start), units="days")
-  
-  # Filter Data as per selected dates
-  countryData = countryData[countryData$date_asdate >= StudyTimeFrame.Start & countryData$date_asdate <= StudyTimeFrame.End, ]
-  
-  # Generate Day Counter
-  dayCounter = 1 : StudyTimeFrame.TotalDays
-  
-  # Generate Modeling Data 
-  modelingData = data.frame(cbind("X" = dayCounter, "Y" = countryData[1:StudyTimeFrame.TotalDays,][interestedY]))
-  colnames(modelingData)[1] = 'X'
-  colnames(modelingData)[2] = 'Y'
-  return(modelingData)
 }
 
 Text_InitialAnalysis = function(countryData, selectedStart, selectedEnd){
@@ -147,3 +125,34 @@ Plot_InitialAnalysis = function(countryName, countryData){
                InitialPlots.TotalDeaths, InitialPlots.NewDeaths, nrow=2, ncol=2)
   
 }
+
+#************************************************************#
+#*  Data Analysis Functions
+#************************************************************#
+
+get_ModelingData_ByCountryCodeAndDates = function(selectedDataSource, selectedCountryCode, selectedStart, selectedEnd, interestedY){
+  # Get Data
+  countryData = get_Data_ByCountryCode(selectedDataSource, selectedCountryCode)
+  
+  # Get Total Days * Prepare Dates
+  StudyTimeFrame.Start = as.Date(selectedStart)
+  StudyTimeFrame.End = as.Date(selectedEnd)+1
+  StudyTimeFrame.TotalDays = as.numeric((StudyTimeFrame.End - StudyTimeFrame.Start), units="days")
+  
+  # Filter Data as per selected dates
+  countryData = countryData[countryData$date_asdate >= StudyTimeFrame.Start & countryData$date_asdate <= StudyTimeFrame.End, ]
+  
+  # Generate Day Counter
+  dayCounter = 1 : StudyTimeFrame.TotalDays
+  
+  # Generate Modeling Data 
+  modelingData = data.frame(cbind("X" = dayCounter, "Y" = countryData[1:StudyTimeFrame.TotalDays,][interestedY]))
+  colnames(modelingData)[1] = 'X'
+  colnames(modelingData)[2] = 'Y'
+  return(modelingData)
+}
+
+build_LinearRegressionModel = function(modelData, modelFormula){
+  return(glm(formula=modelFormula, data=modelData))
+}
+
