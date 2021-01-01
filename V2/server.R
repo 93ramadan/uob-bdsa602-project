@@ -64,7 +64,8 @@ server = function(input, output, session) {
   output$Text_CountryName = renderText({
     req(input$selectedCountryCode)
     print("Update country name header")
-    listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName
+    
+    get_countryName()
   })
   
   #* Country or Date Range Selection - Update Initial Analysis (Text)
@@ -87,7 +88,7 @@ server = function(input, output, session) {
     output$Plot_InitialAnalysisTitle = renderText({
       "Cases vs. Deaths Overview"
     })
-    countryName = listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName
+    countryName = get_countryName()
     Plot_InitialAnalysis(countryName, countryFilteredData())
   })
   
@@ -147,13 +148,14 @@ server = function(input, output, session) {
     req(CountryModel_LR())
     print('(LR) plot updating')
     
+    countryName = get_countryName()
     # Prepare Data vs Prediction
     modelingData = countryModelingData()
     predictionData = predict(object = CountryModel_LR(), newdata = modelingData)
     
     # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
-         main=paste('New',get_YTitle(),'(Actual vs. LR)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+         main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. LR)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
     lines(modelingData$X, predictionData, lty=1, lwd=2, col="blue")
     grid()
@@ -174,6 +176,7 @@ server = function(input, output, session) {
     req(CountryModel_SplineCubic())
     print('(Spline - Cubic) plot updating')
     
+    countryName = get_countryName()
     # Prepare Data vs Prediction
     modelingData = countryModelingData()
     predictionData = predict(object=CountryModel_SplineCubic(), newdata=list(X = modelingData$X), se=TRUE)
@@ -183,7 +186,7 @@ server = function(input, output, session) {
     
     # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
-         main=paste('New',get_YTitle(),'(Actual vs. Cubic Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+         main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Cubic Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
     lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
     matlines(modelingData$X, predictionData.CI, lty=2, lwd=2, col="red")
@@ -209,6 +212,7 @@ server = function(input, output, session) {
     req(CountryModel_SplineNatural())
     print('(Spline - Natural) plot updating')
     
+    countryName = get_countryName()
     # Prepare Data vs Prediction
     modelingData = countryModelingData()
     predictionData = predict(object=CountryModel_SplineNatural(), newdata=list(X = modelingData$X), se=TRUE)
@@ -218,7 +222,7 @@ server = function(input, output, session) {
     
     # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
-         main=paste('New',get_YTitle(),'(Actual vs. Natural Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+         main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Natural Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
     lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
     matlines(modelingData$X, predictionData.CI, lty=2, lwd=2, col="red")
@@ -244,6 +248,7 @@ server = function(input, output, session) {
     req(CountryModel_SplineSmooth())
     print('(Spline - Smooth) plot updating')
     
+    countryName = get_countryName()
     # Prepare Data vs Prediction
     modelingData = countryModelingData()
     predictionData = predict(object=CountryModel_SplineSmooth(), newdata=list(X = modelingData$X))
@@ -251,7 +256,7 @@ server = function(input, output, session) {
     
     # Plots
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
-         main=paste('New',get_YTitle(),'(Actual vs. Smooth Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+         main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Smooth Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
     lines(modelingData$X, predictionData.Y, lty=1, lwd=2, col="blue")
     grid()
@@ -265,5 +270,9 @@ server = function(input, output, session) {
     title = unlist(strsplit(input$selectedVariableY, '_'))[2]
     title = paste(toupper(substring(title, 1,1)), substring(title, 2), sep = '')
     return(title)
+  }
+  
+  get_countryName = function(){
+    return(listOfCountries()[which(listOfCountries()$CountryCode == input$selectedCountryCode), ]$CountryName)
   }
 }
