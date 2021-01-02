@@ -221,5 +221,34 @@ model_npreg$y
 
 model_smooth$y
 
+coefficients(model_lr)
+coefficients(modle_cubic)
+coefficients(model_natural)
+model_smooth$fit$coef
+
+BIC_smooth_spline(model_smooth)
+AIC_smooth_spline(model_smooth)
+
+
+model_smooth$fit
+
+coef(model_smooth)
+
+anova(model_lr,modle_cubic,model_natural)
+anova(modle_cubic,model_natural,model_smooth)
+
+require(santaR)
+santaR_start_GUI(browser = TRUE)
+
+detach(santaR)
+
+searchpaths()
+
+df_search 
+
+
+
+
+
 
 

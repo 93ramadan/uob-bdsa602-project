@@ -193,13 +193,13 @@ server = function(input, output, session) {
     output$Text_Plot_LR = renderText({
       req(CountryModel_LR())
       conclusionMessage = ''
-      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', round(AIC(CountryModel_LR()), 3), '<br/>')
-      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', round(BIC(CountryModel_LR()), 3), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =',prettyNum(round(AIC(CountryModel_LR()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC(CountryModel_LR()), 3), big.mark = ','), '<br/>')
       trainingMSE = mean((modelingData_Training$Y-predictionData_Training)^2)
-      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
       if (length(modelingData_Testing$X) > 0){
         testingMSE = mean((modelingData_Testing$Y-predictionData_Testing)^2)
-        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', round(testingMSE,2), '<br/>')
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
       }
       conclusionMessage
     })
@@ -268,13 +268,13 @@ server = function(input, output, session) {
     output$Text_Plot_SplineCubic = renderText({
       req(CountryModel_SplineCubic())
       conclusionMessage = ''
-      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', round(AIC(CountryModel_SplineCubic()), 3), '<br/>')
-      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', round(BIC(CountryModel_SplineCubic()), 3), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', prettyNum(round(AIC(CountryModel_SplineCubic()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC(CountryModel_SplineCubic()), 3), big.mark = ','), '<br/>')
       trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
-      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
       if (length(modelingData_Testing$X) > 0){
         testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
-        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', round(testingMSE,2), '<br/>')
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
       }
       conclusionMessage
     })
@@ -343,13 +343,13 @@ server = function(input, output, session) {
     output$Text_Plot_SplineNatural = renderText({
       req(CountryModel_SplineNatural())
       conclusionMessage = ''
-      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', round(AIC(CountryModel_SplineNatural()), 3), '<br/>')
-      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', round(BIC(CountryModel_SplineNatural()), 3), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', prettyNum(round(AIC(CountryModel_SplineNatural()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC(CountryModel_SplineNatural()), 3), big.mark = ','), '<br/>')
       trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
-      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
       if (length(modelingData_Testing$X) > 0){
         testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
-        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', round(testingMSE,2), '<br/>')
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
       }
       conclusionMessage
     })
@@ -405,17 +405,19 @@ server = function(input, output, session) {
     output$Text_Plot_SplineSmooth = renderText({
       req(CountryModel_SplineSmooth())
       conclusionMessage = ''
-      #conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', round(BIC(CountryModel_SplineSmooth()), 3), '<br/>')
-      conclusionMessage = paste(conclusionMessage,'<b> Optimal Degrees of Freedom </b> =', round((CountryModel_SplineSmooth()$df), 3), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> Optimal Degrees of Freedom </b> =', prettyNum(round((CountryModel_SplineSmooth()$df), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', prettyNum(round(AIC_smooth_spline(CountryModel_SplineSmooth()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC_smooth_spline(CountryModel_SplineSmooth()), 3), big.mark = ','), '<br/>')
       trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
-      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', round(trainingMSE,2), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
       if (length(modelingData_Testing$X) > 0){
         testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
-        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', round(testingMSE,2), '<br/>')
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
       }
       conclusionMessage
     })
   })
+  
   
   #************************************************************#
   #*  Common Functions
