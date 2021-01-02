@@ -67,17 +67,18 @@ d123[d123$date_asdate >= '2020-04-04' & d123$date_asdate <= '2020-06-01', ]
 
 ### LR
 
-x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Australia', '2020-04-04', '2020-06-01', 'new_cases')
-xx11 = build_LinearRegressionModel(modelData = x1)
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Vatican', '2020-04-04', '2020-06-01', 'new_cases')
+
 x1_pred = predict(object = xx11, newdata = x1)
 plot(x1$X, x1$Y, pch=20,col="darkgrey")
 lines(x1$X, x1$Y,lty=1,lwd=2,col="darkgrey")
 lines(x1$X, x1_pred,lty=1,lwd=2,col="blue")
 
+BIC(xx11)
+
 ## SPLINE - CUBIC - we already define cuts as three (df = 6)
 
-x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Australia', '2020-04-04', '2020-06-01', 'new_cases')
-xx11 = build_CubicSplineModel(modelData = x1)
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Vatican', '2020-04-04', '2020-06-01', 'new_cases')
 
 
 x1_pred = predict(object=xx11, newdata=list(X = x1$X),se=TRUE)
@@ -103,8 +104,9 @@ geom_vline(xintercept =  15.5)
 
 ## SPLINE - NATURAL - we already define cuts as three (df = 4)
 
-x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Australia', '2020-04-04', '2020-06-01', 'new_cases')
-xx11 = build_NaturalSplineModel(modelData = x1)
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Vatican', '2020-04-04', '2020-06-01', 'new_cases')
+
+
 knotLocaitons = attr(bs(x1$X,df=4),"knots")
 
 x1_pred = predict(object=xx11, newdata=list(X = x1$X),se=TRUE)
@@ -126,11 +128,38 @@ abline(v = as.numeric(c(knotLocaitons)), lty = 5)
 as.numeric(c(knotLocaitons))
 
 ## SPLINE - SMOOTH - we already define cuts as three (df = CV)
-x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Australia', '2020-04-04', '2020-06-01', 'new_cases')
-xx11 = build_SmoothSplineModel(modelData = x1)
 
 
-x1_pred = predict(object=xx11, newdata=list(X = x1$X),se=TRUE)
+CP(xx11)
+
+xx11$df
+
+xx11$y
+
+install.packages("npreg")
+require(npreg)
+spline_usingSS = ss(x1$X, y= x1$Y, method = 'BIC', df = xx11$df)
+
+install.packages("santaR")
+require(santaR)
+
+BIC_smooth_spline(xx11)
+
+
+spline_as_NS = (lm(formula=(Y ~ ns(X, df=4)), data=x1))
+spline_as_BS = (lm(formula=(Y ~ bs(X, df=xx11$df)), data=x1))
+
+spline_usingSS$y
+xx11$y
+
+x1_pred = predict(object=xx11, x = x1$X)
+x1_pred_2 = predict(object=spline_usingSS, x = x1$X)
+
+lines(x1$X, x1_pred$y, lty=1, lwd=2, col="blue")
+lines(x1$X, x1_pred_2$y, lty=1, lwd=2, col="red")
+
+
+x1_pred$y == x1_pred_2$y
 
 fit = x1_pred$y
 se = x1_pred$se.fit
@@ -154,7 +183,43 @@ prediction = predict(object=Models.cubic.spline[[i]],newdata=list(dayCounter),se
 Models.cubic.spline[[50]]
 
 
+###########################################################################
 
+testsplit = 80
+x1 = get_ModelingData_ByCountryCodeAndDates('local', 'Albania', '2020-04-04', '2020-06-01', 'new_cases')
+plot(x1$X, x1$Y, pch=20, col="darkgrey", main="Actual Data")
+
+model_lr = build_LinearRegressionModel(modelData = x1, testsplit)
+rss(model_lr)
+summary(model_lr)
+BIC(model_lr)
+AIC(model_lr)
+
+modle_cubic = build_CubicSplineModel(modelData = x1, testsplit)
+summary(modle_cubic)
+BIC(modle_cubic)
+AIC(modle_cubic)
+
+model_natural = build_NaturalSplineModel(modelData = x1, testsplit)
+summary(model_natural)
+BIC(model_natural)
+AIC(model_natural)
+
+model_smooth = build_SmoothSplineModel(modelData = x1, testsplit)
+names(model_smooth)
+summary(model_smooth)
+BIC(model_smooth)
+AIC(model_smooth)
+
+model_npreg = ss(x = x1$X, y = x1$Y, df = model_smooth$df)
+names(model_npreg)
+model_npreg$bic
+BIC(model_npreg)
+AIC(model_npreg)
+
+model_npreg$y
+
+model_smooth$y
 
 
 
