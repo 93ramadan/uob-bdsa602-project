@@ -388,7 +388,7 @@ server = function(input, output, session) {
     
     # Plot - Actual
     plot(modelingData$X, modelingData$Y, pch=20, col="darkgrey",
-         main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Smooth Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
+         main=paste('New',get_YTitle(),'in',countryName,'(Actual vs. Smoothing Spline)'), xlab = 'Day', ylab = paste('Number of',get_YTitle()))
     lines(modelingData$X, modelingData$Y, lty=1, lwd=2, col="darkgrey")
     
     # Plot - Training
@@ -405,7 +405,7 @@ server = function(input, output, session) {
     output$Text_Plot_SplineSmooth = renderText({
       req(CountryModel_SplineSmooth())
       conclusionMessage = ''
-      conclusionMessage = paste(conclusionMessage,'<b> Optimal Degrees of Freedom </b> =', prettyNum(round((CountryModel_SplineSmooth()$df), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> Degrees of Freedom </b> =', prettyNum(round((CountryModel_SplineSmooth()$df), 3), big.mark = ','), '<br/>')
       conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', prettyNum(round(AIC_smooth_spline(CountryModel_SplineSmooth()), 3), big.mark = ','), '<br/>')
       conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC_smooth_spline(CountryModel_SplineSmooth()), 3), big.mark = ','), '<br/>')
       trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
