@@ -4,6 +4,13 @@
 
 server = function(input, output, session) {
   
+  output$UOB_LOGO <- renderImage({
+    return(list(
+      src = "uob.png",
+      alt = "UOB Logo"
+    ))
+  }, deleteFile = FALSE)
+  
   #************************************************************#
   #*  Dynamic UI Updates
   #************************************************************#
@@ -178,18 +185,22 @@ server = function(input, output, session) {
     # Plot - Testing
     lines(modelingData_Testing$X, predictionData_Testing, lty=1, lwd=2, col="darkorange1")
     
+    # Plot - Show Grid
     grid()
     
-    # Model Evaluations
-    
-    ##* Text - LR Message
+    #* Model Evaluations
+    #* Text - LR Message
     output$Text_Plot_LR = renderText({
       req(CountryModel_LR())
-      conclusionMessage = '<ul>'
-    #  
-      conclusionMessage = paste(conclusionMessage,'<li>', 'Traing MSE:', '<li>')
-    #  
-      conclusionMessage = paste(conclusionMessage,'</ul>')
+      conclusionMessage = ''
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =',prettyNum(round(AIC(CountryModel_LR()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC(CountryModel_LR()), 3), big.mark = ','), '<br/>')
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
+      if (length(modelingData_Testing$X) > 0){
+        testingMSE = mean((modelingData_Testing$Y-predictionData_Testing)^2)
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
+      }
       conclusionMessage
     })
   })
@@ -249,7 +260,24 @@ server = function(input, output, session) {
       matlines(modelingData_Testing$X, predictionData_Testing.CI, lty=2, lwd=2, col="darkorchid2")
     }
     
+    # Plot - Show Grid
     grid()
+    
+    #* Model Evaluations
+    #* Text - Spline-Cubic Message
+    output$Text_Plot_SplineCubic = renderText({
+      req(CountryModel_SplineCubic())
+      conclusionMessage = ''
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', prettyNum(round(AIC(CountryModel_SplineCubic()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC(CountryModel_SplineCubic()), 3), big.mark = ','), '<br/>')
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
+      if (length(modelingData_Testing$X) > 0){
+        testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
+      }
+      conclusionMessage
+    })
   })
   
   #* Spline - Natural - Model Changed
@@ -307,7 +335,24 @@ server = function(input, output, session) {
       matlines(modelingData_Testing$X, predictionData_Testing.CI, lty=2, lwd=2, col="darkorchid2")
     }
  
+    # Plot - Show Grid
     grid()
+    
+    #* Model Evaluations
+    #* Text - Spline-Natural Message
+    output$Text_Plot_SplineNatural = renderText({
+      req(CountryModel_SplineNatural())
+      conclusionMessage = ''
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', prettyNum(round(AIC(CountryModel_SplineNatural()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC(CountryModel_SplineNatural()), 3), big.mark = ','), '<br/>')
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
+      if (length(modelingData_Testing$X) > 0){
+        testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
+      }
+      conclusionMessage
+    })
   })
   
   #* Spline - Smooth - Model Changed
@@ -352,10 +397,27 @@ server = function(input, output, session) {
     # Plot - Testing
     lines(modelingData_Testing$X, predictionData_Testing.Y, lty=1, lwd=2, col="darkorange1")
     
+    # Plot - Show Grid
     grid()
     
-    
+    #* Model Evaluations
+    #* Text - Spline-Smooth Message
+    output$Text_Plot_SplineSmooth = renderText({
+      req(CountryModel_SplineSmooth())
+      conclusionMessage = ''
+      conclusionMessage = paste(conclusionMessage,'<b> Optimal Degrees of Freedom </b> =', prettyNum(round((CountryModel_SplineSmooth()$df), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> AIC </b> =', prettyNum(round(AIC_smooth_spline(CountryModel_SplineSmooth()), 3), big.mark = ','), '<br/>')
+      conclusionMessage = paste(conclusionMessage,'<b> BIC </b> =', prettyNum(round(BIC_smooth_spline(CountryModel_SplineSmooth()), 3), big.mark = ','), '<br/>')
+      trainingMSE = mean((modelingData_Training$Y-predictionData_Training.Y)^2)
+      conclusionMessage = paste(conclusionMessage,'<b> Training MSE </b> =', prettyNum(round(trainingMSE,2), big.mark = ','), '<br/>')
+      if (length(modelingData_Testing$X) > 0){
+        testingMSE = mean((modelingData_Testing$Y-predictionData_Testing.Y)^2)
+        conclusionMessage = paste(conclusionMessage,'<b> Testing MSE </b> =', prettyNum(round(testingMSE,2), big.mark = ','), '<br/>')
+      }
+      conclusionMessage
+    })
   })
+  
   
   #************************************************************#
   #*  Common Functions
