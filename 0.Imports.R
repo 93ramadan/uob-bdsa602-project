@@ -1,11 +1,12 @@
 #************************************************************#
 #*  Import needed libraries
 #************************************************************#
+require(dplyr)
 require(ggplot2)
 require(gridExtra)
-require(jsonlite)
 require(lubridate)
 require(splines)
 require(caret)
 require(boot)
-require(dplyr)
+require(jsonlite)
+require(shiny)
